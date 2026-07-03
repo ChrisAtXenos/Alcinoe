@@ -2074,6 +2074,7 @@ type
     destructor Destroy; override;
     procedure BeforeDestruction; override;
     procedure Assign(Source: TALDynamicControl); override;
+    procedure SetCheckedNoChange(const Value: Boolean);
     procedure AlignToPixel; override;
     procedure ApplyColorScheme; override;
     procedure MakeBufDrawable; override;
@@ -10559,6 +10560,18 @@ begin
   Finally
     EndUpdate;
   End;
+end;
+
+{************************************************************************}
+procedure TALDynamicToggleButton.SetCheckedNoChange(const Value: Boolean);
+begin
+  var LPrevOnChange := fOnChange;
+  fOnChange := nil;
+  try
+    SetChecked(Value);
+  finally
+    fOnChange := LPrevOnChange;
+  end;
 end;
 
 {********************************************}
