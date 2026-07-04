@@ -8,11 +8,11 @@ uses
   System.SysUtils,
   System.Classes,
   System.IOUtils,
-  System.Types,
   System.StrUtils,
   System.Math,
   System.Generics.Collections,
   System.Win.Registry,
+  System.AnsiStrings,
   Winapi.Windows,
   Alcinoe.StringList,
   Alcinoe.StringUtils,
@@ -21,10 +21,10 @@ uses
 
 type
 
-  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
+  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
   EUsesParseError = class(Exception);
 
-  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
+  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
   TUsesItemKind = (uikUnit, uikDirective, uikComment);
 
   {~~~~~~~~~~~~~~~~~~~~~~~~}
@@ -85,13 +85,13 @@ var
   GBuildCount: Integer = 0;
   GBaselineWarnings: TObjectDictionary<String, TALStringListA>;
 
-{**********************************************************}
+{********************************************************}
 function IsIdentStartChar(const AChar: AnsiChar): Boolean;
 begin
   Result := AChar in ['A'..'Z', 'a'..'z', '_'];
 end;
 
-{*****************************************************}
+{***************************************************}
 function IsIdentChar(const AChar: AnsiChar): Boolean;
 begin
   Result := AChar in ['A'..'Z', 'a'..'z', '0'..'9', '_'];
@@ -107,7 +107,7 @@ begin
   Result := ALCopyStr(AText, 3, I - 3);
 end;
 
-{***********************************************************}
+{***************************************************}
 // Returns +1 for {$IF/$IFDEF/$IFNDEF/$IFOPT}, -1 for
 // {$ENDIF/$IFEND} and 0 for any other compiler directive
 function GetDirectiveDelta(const AText: AnsiString): Integer;
@@ -123,7 +123,7 @@ begin
           ALSameTextA(LKeyword, 'IFEND') then Result := -1;
 end;
 
-{**************************}
+{*****************************}
 constructor TUsesClause.Create;
 begin
   inherited Create;
@@ -132,14 +132,14 @@ begin
   Synthetic := False;
 end;
 
-{**************************}
+{*****************************}
 destructor TUsesClause.Destroy;
 begin
   ALFreeAndNil(Items);
   inherited Destroy;
 end;
 
-{******************************************}
+{********************************************}
 function TUsesClause.ActiveUnitCount: Integer;
 begin
   Result := 0;
@@ -147,7 +147,7 @@ begin
     if (LItem.Kind = uikUnit) and (not LItem.Removed) then inc(Result);
 end;
 
-{*************************************************}
+{**************************************************}
 function TUsesClause.HasDirectiveOrComment: Boolean;
 begin
   Result := False;
@@ -155,7 +155,7 @@ begin
     if LItem.Kind in [uikDirective, uikComment] then exit(True);
 end;
 
-{***********************************************}
+{**********************************************}
 function TUsesClause.GenerateSource: AnsiString;
 var LLastIdx: Integer;
     LUnitCount: Integer;
@@ -205,7 +205,7 @@ begin
 
 end;
 
-{**************************}
+{*****************************}
 constructor TSourceFile.Create;
 begin
   inherited Create;
@@ -215,7 +215,7 @@ begin
   Modified := False;
 end;
 
-{**************************}
+{*****************************}
 destructor TSourceFile.Destroy;
 begin
   ALFreeAndNil(Segments);
@@ -223,10 +223,10 @@ begin
   inherited Destroy;
 end;
 
-{***********************************************}
+{**********************************************}
 function TSourceFile.GenerateSource: AnsiString;
 
-  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
+  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
   function StripLeadingEol(const AStr: AnsiString): AnsiString;
   begin
     if (Length(AStr) >= 2) and (AStr[1] = #13) and (AStr[2] = #10) then Result := ALCopyStr(AStr, 3, MaxInt)
@@ -257,7 +257,7 @@ begin
   Result := Result + LSegment;
 end;
 
-{*******************************}
+{************************}
 procedure ParseUsesClause(
             const ASource: AnsiString;
             var AIndex: Integer;
@@ -266,7 +266,7 @@ procedure ParseUsesClause(
 var LLastUnit: TUsesItem;
     LSawNewLine: Boolean;
 
-  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
+  {~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
   procedure AddComment(const AText: AnsiString);
   var LItem: TUsesItem;
   begin
@@ -374,7 +374,7 @@ begin
   raise EUsesParseError.Create('Unterminated uses clause (";" not found)');
 end;
 
-{********************************}
+{************************}
 procedure ParseSourceFile(
             const ASource: AnsiString;
             const ASourceFile: TSourceFile);
@@ -469,7 +469,7 @@ begin
 
 end;
 
-{**********************************************************************}
+{*******************************************************************}
 // When a unit reference is removed, exactly one separator comma must
 // disappear with it. The comma carried by the unit itself vanishes
 // automatically (a removed item is not emitted); otherwise the comma
@@ -549,7 +549,7 @@ begin
   end;
 end;
 
-{****************************************************************}
+{*******************************************************************}
 function GuardSignature(const APath: TArray<AnsiString>): AnsiString;
 var I: Integer;
 begin
@@ -558,7 +558,7 @@ begin
     Result := Result + APath[I] + '|';
 end;
 
-{**********************************************************************}
+{************************************************************************}
 function CountOpeningDirectives(const APath: TArray<AnsiString>): Integer;
 var I: Integer;
 begin
@@ -567,7 +567,7 @@ begin
     if GetDirectiveDelta(APath[I]) > 0 then inc(Result);
 end;
 
-{***********************************}
+{********************************}
 function ClauseContainsActiveUnit(
            const AClause: TUsesClause;
            const AName: AnsiString): Boolean;
@@ -577,7 +577,7 @@ begin
     if (LItem.Kind = uikUnit) and (not LItem.Removed) and ALSameTextA(LItem.Text, AName) then exit(True);
 end;
 
-{***********************************************************************}
+{******************************************************************}
 // Replace line numbers like "(123)" by "()" so that a warning stays
 // identical to its baseline counterpart even when lines are shifted
 // by the removal of unit references
@@ -601,7 +601,7 @@ begin
   end;
 end;
 
-{**********************************}
+{*****************************************}
 function CreateWarningList: TALStringListA;
 begin
   Result := TALStringListA.Create;
@@ -610,7 +610,7 @@ begin
   Result.CaseSensitive := False;
 end;
 
-{*******************************}
+{************************}
 procedure ExtractWarnings(
             const AOutput: AnsiString;
             const AWarnings: TALStringListA);
@@ -635,7 +635,7 @@ begin
   end;
 end;
 
-{*****************************}
+{***********************}
 function FirstNewWarning(
            const ABaseline: TALStringListA;
            const ACurrent: TALStringListA): AnsiString;
@@ -646,13 +646,13 @@ begin
     if ABaseline.IndexOf(ACurrent[I]) < 0 then exit(ACurrent[I]);
 end;
 
-{**********************************************************}
+{*********************************************************}
 function PairKey(const AConfig, APlatform: String): String;
 begin
   Result := AConfig + '|' + APlatform;
 end;
 
-{**************************}
+{******************}
 function RunMSBuild(
            const ATarget: String;
            const AConfig: String;
@@ -682,7 +682,7 @@ begin
   end;
 end;
 
-{*************************************************}
+{************************************************************}
 // Print the error lines of a build output (or the tail of the
 // output when no error line can be identified)
 procedure PrintBuildOutputTail(const AOutput: AnsiString);
@@ -710,7 +710,7 @@ begin
   end;
 end;
 
-{***********************************************}
+{*******************************************}
 function Unquote(const AStr: String): String;
 begin
   Result := Trim(AStr);
@@ -718,7 +718,7 @@ begin
     Result := Copy(Result, 2, Length(Result) - 2);
 end;
 
-{**********************************}
+{***************}
 function AskUser(
            const APrompt: String;
            const ADefault: String): String;
@@ -731,7 +731,7 @@ begin
   if Result = '' then Result := ADefault;
 end;
 
-{***********************************************}
+{*****************************************************}
 function SplitList(const AStr: String): TArray<String>;
 var LToken, LItem: String;
 begin
@@ -742,7 +742,7 @@ begin
   end;
 end;
 
-{******************************}
+{**************************}
 function FindRsVars: String;
 var LRegistry: TRegistry;
     LVersion, LPath, LRootDir: String;
@@ -766,7 +766,7 @@ begin
   end;
 end;
 
-{*************************************************}
+{*****************************************************}
 procedure EnsureBackup(const ASourceFile: TSourceFile);
 begin
   if GCreateBackup and (not ASourceFile.BackupDone) then begin
@@ -776,7 +776,7 @@ begin
   ASourceFile.BackupDone := True;
 end;
 
-{***************************************************}
+{*******************************************************}
 procedure SaveSourceFile(const ASourceFile: TSourceFile);
 begin
   EnsureBackup(ASourceFile);
@@ -784,7 +784,7 @@ begin
   ASourceFile.Modified := True;
 end;
 
-{*******************************************************************}
+{******************************************************************}
 // Rebuild every selected configuration/platform pair. Returns False
 // (with the reason) as soon as one build fails or introduces a
 // warning that was not present in the baseline build
@@ -838,7 +838,7 @@ begin
   end;
 end;
 
-{*******************************}
+{**************************}
 procedure RunBaselineBuilds;
 var LWarnings: TALStringListA;
     LOutput: AnsiString;
@@ -1011,8 +1011,9 @@ begin
         if not TestBuildAllPairs(LReason, True{APrintOutputOnFailure}) then begin
           for var LSourceFile in LSourceFiles do
             if LSourceFile.Modified then ALSaveStringtoFile(LSourceFile.OriginalSource, LSourceFile.FilePath);
-          raise Exception.Create('The normalization of the uses clauses broke the build (' + LReason + '). ' +
-                                 'The compiler errors above show the file that could not be normalized. All files have been restored.');
+          raise Exception.Create(
+                  'The normalization of the uses clauses broke the build (' + LReason + '). ' +
+                  'The compiler errors above show the file that could not be normalized. All files have been restored.');
         end;
       end;
       Writeln('');

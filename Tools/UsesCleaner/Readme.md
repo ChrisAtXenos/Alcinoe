@@ -28,8 +28,7 @@ How it works
 2. Before modifying any file, the original project is compiled once
    for every selected configuration/platform pair. If one of those
    builds fails or emits warnings, the tool stops and reports that
-   the baseline build is invalid. The spurious warning
-   "failed to read line prolog at offset ..." is always ignored.
+   the baseline build is invalid.
 
 3. Both the `interface` and the `implementation` uses clauses of
    every .pas file are then normalized to the following format

@@ -371,6 +371,7 @@ Call :BUILD_PROJECT "%ALBaseDir%\Tools\EnvOptionsProjUpdater" "_Source" "EnvOpti
 Call :BUILD_PROJECT "%ALBaseDir%\Tools\ImageMagickWrapperGenerator" "_Source" "ImageMagickWrapperGenerator.dproj" "Win64" || GOTO ERROR
 Call :BUILD_PROJECT "%ALBaseDir%\Tools\NativeBridgeFileGenerator" "_Build\Source" "NativeBridgeFileGeneratorHelper.dproj" "Win64" || GOTO ERROR
 Call :BUILD_PROJECT "%ALBaseDir%\Tools\UnitNormalizer" "_Source" "UnitNormalizer.dproj" "Win64" || GOTO ERROR
+Call :BUILD_PROJECT "%ALBaseDir%\Tools\UsesCleaner" "_Source" "UsesCleaner.dproj" "Win64" || GOTO ERROR
 Call :BUILD_PROJECT "%ALBaseDir%\Tools\PlatformApiInterfaceDiff" "_Source" "PlatformApiInterfaceDiff.dproj" "Win64" || GOTO ERROR
 Call :BUILD_PROJECT "%ALBaseDir%\Tools\CHeaderWrapperGenerator" "_Source" "CHeaderWrapperGenerator.dproj" "Win64" || GOTO ERROR
 if "%DXVCL%"=="" goto BUILD_DEMOS

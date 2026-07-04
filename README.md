@@ -693,6 +693,27 @@ DeployMan / DeployProjNormalizer / DProjNormalizer
 <br/>
 
 
+UsesCleaner
+===========
+
+<img src="https://github.com/MagicFoundation/Alcinoe/blob/master/References/DocImages/usescleaner.png?raw=true" width="600" style="width:600px;"/>
+  
+**UsesCleaner** is a command-line tool for Delphi that detects and removes unused
+units from `uses` clauses. It works safely by removing or moving one unit at a
+time, rebuilding the project with MSBuild, and keeping the change only when all
+selected configurations and platforms still compile without new errors or
+warnings.
+
+The tool can clean both `interface` and `implementation` `uses` clauses. When a
+unit cannot be removed from the `interface` section, UsesCleaner also tries to
+move it to the `implementation` section, preserving any surrounding conditional
+compilation directives such as `{$IFDEF}`, `{$ELSE}`, or `{$ENDIF}`.
+
+Learn more at [Tools/UsesCleaner](https://github.com/MagicFoundation/Alcinoe/tree/master/Tools/UsesCleaner)
+<br/>
+<br/>
+
+
 Alcinoe Code Profiler
 =====================
 
