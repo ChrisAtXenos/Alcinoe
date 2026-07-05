@@ -28,7 +28,8 @@ How it works
 2. Before modifying any file, the original project is compiled once
    for every selected configuration/platform pair. If one of those
    builds fails or emits warnings, the tool stops and reports that
-   the baseline build is invalid.
+   the baseline build is invalid. The spurious warning
+   "failed to read line prolog at offset ..." is always ignored.
 
 3. Both the `interface` and the `implementation` uses clauses of
    every .pas file are then normalized to the following format
@@ -63,6 +64,24 @@ How it works
 5. At the end, a final full rebuild of every configuration/platform
    pair is executed to guarantee that the project still compiles
    with no new warnings.
+
+Keeping a unit
+--------------
+
+A unit reference followed by the comment `// UsesCleaner:keep` is
+never removed nor moved:
+
+```
+uses
+  System.Classes, // UsesCleaner:keep
+  FMX.Types, // UsesCleaner:keep
+  Alcinoe.JSONDoc,
+  MFApp.Page.Base;
+```
+
+Use it for units that are required at runtime but that the compiler
+cannot see as used (e.g. units registering classes or components in
+their initialization section).
 
 Safety
 ------

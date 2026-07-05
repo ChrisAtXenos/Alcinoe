@@ -8,6 +8,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.IOUtils,
+  System.Types,
   System.StrUtils,
   System.Math,
   System.Generics.Collections,
@@ -1052,6 +1053,10 @@ begin
             for var LItem in LClause.Items do begin
               if LItem.Kind <> uikUnit then continue;
               if LItem.MovedFromInterface then continue; // its removal was already tested from the interface clause
+              if ALPosIgnoreCaseA('UsesCleaner:keep', LItem.TrailingComment) > 0 then begin
+                Writeln('  ' + LItem.Text + ' ... kept (UsesCleaner:keep)');
+                continue;
+              end;
               if (LClause.ActiveUnitCount = 1) and LClause.HasDirectiveOrComment then begin
                 Writeln('  ' + LItem.Text + ' ... kept (last unit of a clause containing compiler directives or comments)');
                 continue;
@@ -1236,6 +1241,10 @@ begin
       Writeln('    -CreateBackup=true or false. Create a .bak file before modifying a file. Default: false');
       Writeln('');
       Writeln('  When a parameter is missing, the tool asks for it interactively.');
+      Writeln('');
+      Writeln('  A unit reference followed by the comment "// UsesCleaner:keep" is');
+      Writeln('  never removed nor moved, e.g.:');
+      Writeln('    System.Classes, // UsesCleaner:keep');
       Writeln('');
       Writeln('Example:');
       Writeln('  UsesCleaner.exe^');
