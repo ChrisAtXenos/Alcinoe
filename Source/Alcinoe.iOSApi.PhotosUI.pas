@@ -1,4 +1,4 @@
-unit Alcinoe.iOSapi.PhotosUI;
+unit Alcinoe.iOSApi.PhotosUI;
 
 interface
 

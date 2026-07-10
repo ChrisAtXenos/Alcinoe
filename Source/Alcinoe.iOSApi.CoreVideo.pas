@@ -1,4 +1,4 @@
-unit Alcinoe.iOSapi.CoreVideo;
+unit Alcinoe.iOSApi.CoreVideo;
 
 interface
 

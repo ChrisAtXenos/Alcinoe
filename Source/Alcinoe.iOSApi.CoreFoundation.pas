@@ -1,4 +1,4 @@
-unit Alcinoe.iOSapi.CoreFoundation;
+unit Alcinoe.iOSApi.CoreFoundation;
 
 interface
 
