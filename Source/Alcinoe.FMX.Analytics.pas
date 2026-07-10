@@ -190,7 +190,7 @@ begin
   // https://firebase.google.com/docs/analytics/screenviews
   // https://firebase.google.com/docs/reference/kotlin/com/google/firebase/analytics/FirebaseAnalytics.Param
   trackEvent(
-    'screen_view', 
+    'screen_view',
     [TNameValuePair.Create('screen_name', AScreenName),
      TNameValuePair.Create('screen_class', AScreenClass)]);
 end;
