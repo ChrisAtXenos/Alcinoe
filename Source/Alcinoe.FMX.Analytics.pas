@@ -69,7 +69,7 @@ uses
   Alcinoe.StringUtils,
   Alcinoe.Common;
 
-{*********************************}
+{******************************}
 constructor TALAnalytics.Create;
 begin
 
@@ -89,7 +89,7 @@ begin
 
 end;
 
-{*************************************************************}
+{*******************************************************}
 class function TALAnalytics.CreateInstance: TALAnalytics;
 begin
   result := TALAnalytics.Create;
@@ -113,7 +113,7 @@ begin
   result := FInstance <> nil;
 end;
 
-{********************************************************}
+{**********************************************************}
 procedure TALAnalytics.trackEvent(const AEventName: String);
 begin
 
@@ -136,7 +136,7 @@ begin
 
 end;
 
-{**************************************************************************************************}
+{***********************************************************************************************}
 procedure TALAnalytics.trackEvent(const AEventName: String; const AEventValues: TNameValueArray);
 begin
 
@@ -184,16 +184,18 @@ begin
 
 end;
 
-{*******************************************************************}
+{********************************************************************************************}
 procedure TALAnalytics.TrackScreenView(const AScreenName: String; const AScreenClass: String);
 begin
   // https://firebase.google.com/docs/analytics/screenviews
   // https://firebase.google.com/docs/reference/kotlin/com/google/firebase/analytics/FirebaseAnalytics.Param
-  trackEvent('screen_view', [TNameValuePair.Create('screen_name', AScreenName),
-                             TNameValuePair.Create('screen_class', AScreenClass)]);
+  trackEvent(
+    'screen_view', 
+    [TNameValuePair.Create('screen_name', AScreenName),
+     TNameValuePair.Create('screen_class', AScreenClass)]);
 end;
 
-{********************************************************}
+{*****************************************************}
 procedure TALAnalytics.SetUserID(const AUserID: Int64);
 begin
 
@@ -217,7 +219,7 @@ begin
 
 end;
 
-{************************************}
+{*********************************}
 procedure TALAnalytics.ClearUserID;
 begin
 
@@ -239,7 +241,7 @@ begin
 
 end;
 
-{***********************************************************************************}
+{************************************************************************************************}
 procedure TALAnalytics.SetUserProperty(const APropertyName: String; const APropertyValue: String);
 begin
   {$IFDEF DEBUG}
@@ -247,7 +249,7 @@ begin
   {$ENDIF}
 end;
 
-{***************************************************************}
+{********************************************************************}
 procedure TALAnalytics.ClearUserProperty(const APropertyName: String);
 begin
   {$IFDEF DEBUG}
