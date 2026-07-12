@@ -34,6 +34,14 @@ Function  AlEmptyDirectoryW(
             Const FileNameMask: String = '*';
             Const MinFileAge: TdateTime = ALNullDate): Boolean; overload;
 
+type
+  TALCustomGetPathProc = function: String;
+
+var
+  ALCustomGetAppDataPathW: TALCustomGetPathProc;
+  ALCustomGetTempPathW: TALCustomGetPathProc;
+  ALCustomGetCachePathW: TALCustomGetPathProc;
+
 function ALGetAppDataPathW: String;
 function ALGetTempPathW: String;
 function ALGetTempFilenameW(Const AExt: String = '.tmp'): String;
@@ -209,34 +217,39 @@ end;
 function ALGetAppDataPathW: String;
 begin
 
-  {$IF defined(MSWindows)}
-  // Windows XP:             C:\Documents and Settings\<username>\Application Data\<AppName>\
-  // Windows Vista or later: C:\Users\<username>\AppData\Roaming\<AppName>\
-  Result := TPath.Combine(System.IOUtils.TPath.GetHomePath, ALGetModuleNameW(True{AWithoutExtension}));
-  {$ELSEIF defined(ALAppleOS)}
-  // OS X:          /Users/<username>/Library/Application Support/
-  // iOS Device:    /var/mobile/Containers/Data/Application/<application ID>/Library/Application Support/
-  var LNSFile := TNSFileManager.Wrap(TNSFileManager.OCClass.defaultManager);
-  {$IFNDEF ALCompilerVersionSupported131}
-    {$MESSAGE WARN 'Check if https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-4412 was corrected and adjust the IFDEF'}
-  {$ENDIF}
-  var LErrorPtr: Pointer := nil;
-  var LURL := LNSFile.URLForDirectory(
-                NSApplicationSupportDirectory, // directory: NSSearchPathDirectory;
-                NSUserDomainMask, // inDomain: NSSearchPathDomainMask;
-                nil, // appropriateForURL: NSURL;
-                true, // create: Boolean;
-                @LErrorPtr); // error: PPointer
-  if LErrorPtr <> nil then
-    Raise Exception.Create(NSStrToStr(TNSError.Wrap(LErrorPtr).localizedDescription));
-  if (LURL <> nil) then Result := UTF8ToString(LURL.path.UTF8String)
-  else Raise Exception.Create('Error CBDF8B31-4AE2-4805-AD52-3678D3450A6A');
-  {$ELSEIF defined(ANDROID)}
-  // Android: /data/data/<application ID>/files
-  Result := GetFilesDir;
-  {$ELSE}
-  raise Exception.Create('ALGetAppDataPathW is not supported on this platform.');
-  {$ENDIF}
+  if Assigned(ALCustomGetAppDataPathW) then result := ALCustomGetAppDataPathW
+  else begin
+
+    {$IF defined(MSWindows)}
+    // Windows XP:             C:\Documents and Settings\<username>\Application Data\<AppName>\
+    // Windows Vista or later: C:\Users\<username>\AppData\Roaming\<AppName>\
+    Result := TPath.Combine(System.IOUtils.TPath.GetHomePath, ALGetModuleNameW(True{AWithoutExtension}));
+    {$ELSEIF defined(ALAppleOS)}
+    // OS X:          /Users/<username>/Library/Application Support/
+    // iOS Device:    /var/mobile/Containers/Data/Application/<application ID>/Library/Application Support/
+    var LNSFile := TNSFileManager.Wrap(TNSFileManager.OCClass.defaultManager);
+    {$IFNDEF ALCompilerVersionSupported131}
+      {$MESSAGE WARN 'Check if https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-4412 was corrected and adjust the IFDEF'}
+    {$ENDIF}
+    var LErrorPtr: Pointer := nil;
+    var LURL := LNSFile.URLForDirectory(
+                  NSApplicationSupportDirectory, // directory: NSSearchPathDirectory;
+                  NSUserDomainMask, // inDomain: NSSearchPathDomainMask;
+                  nil, // appropriateForURL: NSURL;
+                  true, // create: Boolean;
+                  @LErrorPtr); // error: PPointer
+    if LErrorPtr <> nil then
+      Raise Exception.Create(NSStrToStr(TNSError.Wrap(LErrorPtr).localizedDescription));
+    if (LURL <> nil) then Result := UTF8ToString(LURL.path.UTF8String)
+    else Raise Exception.Create('Error CBDF8B31-4AE2-4805-AD52-3678D3450A6A');
+    {$ELSEIF defined(ANDROID)}
+    // Android: /data/data/<application ID>/files
+    Result := GetFilesDir;
+    {$ELSE}
+    raise Exception.Create('ALGetAppDataPathW is not supported on this platform.');
+    {$ENDIF}
+
+  end;
 
   If (length(result) > 0) and (result[length(result)] <> TPath.DirectorySeparatorChar) then result := result + TPath.DirectorySeparatorChar;
   If not TDirectory.Exists(result) then TDirectory.CreateDirectory(Result);
@@ -247,20 +260,25 @@ end;
 function ALGetTempPathW: String;
 begin
 
-  {$IF defined(MSWindows)}
-  // Windows XP:             C:\Documents and Settings\<User name>\Local Settings\Temp\
-  // Windows Vista or later: C:\Users\<User name>\AppData\Local\Temp\
-  Result := System.IOUtils.TPath.GetTempPath;
-  {$ELSEIF defined(ALAppleOS)}
-  // OS X:          /var/folders/<random folder name>/
-  // iOS Device:    /private/var/mobile/Containers/Data/Application/<application ID>/tmp/
-  Result := NSStrToStr(TNSString.Wrap(NSTemporaryDirectory));
-  {$ELSEIF defined(ANDROID)}
-  // Android: /data/data/<application ID>/cache/tmp/
-  Result := TPath.Combine(Androidapi.IOUtils.GetCacheDir, 'tmp/');
-  {$ELSE}
-  raise Exception.Create('ALGetAppDataPathW is not supported on this platform.');
-  {$ENDIF}
+  if Assigned(ALCustomGetTempPathW) then result := ALCustomGetTempPathW
+  else begin
+
+    {$IF defined(MSWindows)}
+    // Windows XP:             C:\Documents and Settings\<User name>\Local Settings\Temp\
+    // Windows Vista or later: C:\Users\<User name>\AppData\Local\Temp\
+    Result := System.IOUtils.TPath.GetTempPath;
+    {$ELSEIF defined(ALAppleOS)}
+    // OS X:          /var/folders/<random folder name>/
+    // iOS Device:    /private/var/mobile/Containers/Data/Application/<application ID>/tmp/
+    Result := NSStrToStr(TNSString.Wrap(NSTemporaryDirectory));
+    {$ELSEIF defined(ANDROID)}
+    // Android: /data/data/<application ID>/cache/tmp/
+    Result := TPath.Combine(Androidapi.IOUtils.GetCacheDir, 'tmp/');
+    {$ELSE}
+    raise Exception.Create('ALGetTempPathW is not supported on this platform.');
+    {$ENDIF}
+
+  end;
 
   If (length(result) > 0) and (result[length(result)] <> TPath.DirectorySeparatorChar) then result := result + TPath.DirectorySeparatorChar;
   If not TDirectory.Exists(result) then TDirectory.CreateDirectory(Result);
@@ -277,34 +295,39 @@ end;
 function ALGetCachePathW: String;
 begin
 
-  {$IF defined(MSWindows)}
-  // Windows XP:             C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>\
-  // Windows Vista or later: C:\Users\<username>\AppData\Local\<AppName>\
-  Result := TPath.Combine(System.IOUtils.TPath.GetCachePath, ALGetModuleNameW(True{AWithoutExtension}));
-  {$ELSEIF defined(ALAppleOS)}
-  // OS X:          /Users/<username>/Library/Caches/
-  // iOS Device:    /var/mobile/Containers/Data/Application/<application ID>/Library/Caches/
-  var LNSFile := TNSFileManager.Wrap(TNSFileManager.OCClass.defaultManager);
-  {$IFNDEF ALCompilerVersionSupported131}
-    {$MESSAGE WARN 'Check if https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-4412 was corrected and adjust the IFDEF'}
-  {$ENDIF}
-  var LErrorPtr: Pointer := nil;
-  var LURL := LNSFile.URLForDirectory(
-                NSCachesDirectory, // directory: NSSearchPathDirectory;
-                NSUserDomainMask, // inDomain: NSSearchPathDomainMask;
-                nil, // appropriateForURL: NSURL;
-                true, // create: Boolean;
-                @LErrorPtr); // error: PPointer
-  if LErrorPtr <> nil then
-    Raise Exception.Create(NSStrToStr(TNSError.Wrap(LErrorPtr).localizedDescription));
-  if (LURL <> nil) then Result := UTF8ToString(LURL.path.UTF8String)
-  else Raise Exception.Create('Error 557E87B9-4887-47F4-83F0-E65939AE4704');
-  {$ELSEIF defined(ANDROID)}
-  // Android: /data/data/<application ID>/cache/
-  Result := Androidapi.IOUtils.GetCacheDir;
-  {$ELSE}
-  raise Exception.Create('ALGetAppDataPathW is not supported on this platform.');
-  {$ENDIF}
+  if Assigned(ALCustomGetCachePathW) then result := ALCustomGetCachePathW
+  else begin
+
+    {$IF defined(MSWindows)}
+    // Windows XP:             C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>\
+    // Windows Vista or later: C:\Users\<username>\AppData\Local\<AppName>\
+    Result := TPath.Combine(System.IOUtils.TPath.GetCachePath, ALGetModuleNameW(True{AWithoutExtension}));
+    {$ELSEIF defined(ALAppleOS)}
+    // OS X:          /Users/<username>/Library/Caches/
+    // iOS Device:    /var/mobile/Containers/Data/Application/<application ID>/Library/Caches/
+    var LNSFile := TNSFileManager.Wrap(TNSFileManager.OCClass.defaultManager);
+    {$IFNDEF ALCompilerVersionSupported131}
+      {$MESSAGE WARN 'Check if https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-4412 was corrected and adjust the IFDEF'}
+    {$ENDIF}
+    var LErrorPtr: Pointer := nil;
+    var LURL := LNSFile.URLForDirectory(
+                  NSCachesDirectory, // directory: NSSearchPathDirectory;
+                  NSUserDomainMask, // inDomain: NSSearchPathDomainMask;
+                  nil, // appropriateForURL: NSURL;
+                  true, // create: Boolean;
+                  @LErrorPtr); // error: PPointer
+    if LErrorPtr <> nil then
+      Raise Exception.Create(NSStrToStr(TNSError.Wrap(LErrorPtr).localizedDescription));
+    if (LURL <> nil) then Result := UTF8ToString(LURL.path.UTF8String)
+    else Raise Exception.Create('Error 557E87B9-4887-47F4-83F0-E65939AE4704');
+    {$ELSEIF defined(ANDROID)}
+    // Android: /data/data/<application ID>/cache/
+    Result := Androidapi.IOUtils.GetCacheDir;
+    {$ELSE}
+    raise Exception.Create('ALGetCachePathW is not supported on this platform.');
+    {$ENDIF}
+
+  end;
 
   If (length(result) > 0) and (result[length(result)] <> TPath.DirectorySeparatorChar) then result := result + TPath.DirectorySeparatorChar;
   If not TDirectory.Exists(result) then TDirectory.CreateDirectory(Result);
@@ -496,10 +519,13 @@ end;
 
 initialization
   {$IF defined(DEBUG)}
-  //ALLog('Alcinoe.FileUtils','initialization');
+  ALLog('Alcinoe.FileUtils','initialization');
   //ALLog('ALGetAppDataPathW', ALGetAppDataPathW);
   //ALLog('ALGetTempPathW', ALGetTempPathW);
   //ALLog('ALGetCachePathW', ALGetCachePathW);
   {$ENDIF}
+  ALCustomGetAppDataPathW := nil;
+  ALCustomGetTempPathW := nil;
+  ALCustomGetCachePathW := nil;
 
 end.
