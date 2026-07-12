@@ -9572,7 +9572,7 @@ begin
       // already raised as an exception by the failing statement itself. Typical
       // benign trigger: an insert hitting a unique index inside a transaction,
       // caught by the caller to implement an idempotent operation.
-      if ALPosA('Error in abortTransaction', LMessage) <> 1 then ALLog(LTag, LMessage, TALLogType.WARN);
+      if ALPosW('Error in abortTransaction', LMessage) <> 1 then ALLog(LTag, LMessage, TALLogType.WARN);
     end;
     mongoc_log_level_t.MONGOC_LOG_LEVEL_MESSAGE: ALLog(LTag, LMessage, TALLogType.INFO);
     mongoc_log_level_t.MONGOC_LOG_LEVEL_INFO: ALLog(LTag, LMessage, TALLogType.INFO);
